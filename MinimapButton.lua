@@ -1,7 +1,8 @@
 local addonName, addon = ...
 
-local ICON_TEXTURE   = "Interface\\Icons\\Achievement_General"
-local BUTTON_RADIUS  = 104
+local ICON_TEXTURE  = "Interface\\Icons\\Achievement_General"
+local BUTTON_RADIUS = 104
+local DEFAULT_ANGLE = 220
 
 -- ------------------------------------------------------------------ button
 local button = CreateFrame("Button", "OutgrowCrestsTrackerMinimapBtn", Minimap)
@@ -39,49 +40,78 @@ local function UpdatePosition(degrees)
         math.sin(angle) * BUTTON_RADIUS)
 end
 
+-- ------------------------------------------------------------------ dragging
+-- 12.1.0 added Frame:SetOnUpdateMode, so the drag handler can be installed once
+-- and simply switched off instead of assigning and clearing the script.
+local supportsUpdateMode = button.SetOnUpdateMode ~= nil and Enum.OnUpdateMode ~= nil
+
+local function OnDragUpdate()
+    local mx, my   = Minimap:GetCenter()
+    local cx, cy   = GetCursorPosition()
+    local scale    = Minimap:GetEffectiveScale()
+    local degrees  = math.deg(math.atan2(cy / scale - my, cx / scale - mx)) % 360
+
+    if addon.db and addon.db.minimap then
+        addon.db.minimap.degrees = degrees
+    end
+    UpdatePosition(degrees)
+end
+
+local function SetDragging(enabled)
+    if supportsUpdateMode then
+        button:SetOnUpdateMode(enabled and Enum.OnUpdateMode.RunWhenVisible
+                                       or Enum.OnUpdateMode.Disabled)
+    else
+        button:SetScript("OnUpdate", enabled and OnDragUpdate or nil)
+    end
+end
+
+if supportsUpdateMode then
+    button:SetScript("OnUpdate", OnDragUpdate)
+end
+SetDragging(false)
+
 -- ------------------------------------------------------------------ events
+local function ShowButtonTooltip(owner, anchor)
+    GameTooltip:SetOwner(owner, anchor)
+    GameTooltip:AddLine("Outgrow Crests Tracker", 1.0, 0.82, 0.0)
+    if addon.GetSeason then
+        local season = addon:GetSeason()
+        GameTooltip:AddLine(season.fullName .. " — " .. season.crest .. "s", 0.7, 0.7, 0.7)
+    end
+    GameTooltip:AddLine("|cffffffffLeft-click|r to toggle window", 0.7, 0.7, 0.7)
+    GameTooltip:AddLine("|cffffffffDrag|r to reposition", 0.7, 0.7, 0.7)
+    GameTooltip:Show()
+end
+
 button:SetScript("OnClick", function()
     addon:ToggleDisplay()
 end)
 
 button:SetScript("OnEnter", function(self)
-    GameTooltip:SetOwner(self, "ANCHOR_LEFT")
-    GameTooltip:AddLine("Outgrow Crests Tracker", 1.0, 0.82, 0.0)
-    GameTooltip:AddLine("|cffffffffLeft-click|r to toggle window", 0.7, 0.7, 0.7)
-    GameTooltip:AddLine("|cffffffffDrag|r to reposition", 0.7, 0.7, 0.7)
-    GameTooltip:Show()
+    ShowButtonTooltip(self, "ANCHOR_LEFT")
 end)
 
 button:SetScript("OnLeave", function()
     GameTooltip:Hide()
 end)
 
-button:SetScript("OnDragStart", function(self)
-    self:SetScript("OnUpdate", function()
-        local mx, my = Minimap:GetCenter()
-        local cx, cy = GetCursorPosition()
-        local scale  = Minimap:GetEffectiveScale()
-        local degrees = math.deg(math.atan2(cy / scale - my, cx / scale - mx))
-        if addon.db then
-            addon.db.minimap.degrees = degrees
-        end
-        UpdatePosition(degrees)
-    end)
+button:SetScript("OnDragStart", function()
+    SetDragging(true)
 end)
 
-button:SetScript("OnDragStop", function(self)
-    self:SetScript("OnUpdate", nil)
+button:SetScript("OnDragStop", function()
+    SetDragging(false)
 end)
 
 -- ------------------------------------------------------------------ init
 button:Hide()
 
 function addon:InitMinimapButton()
-    local degrees = (addon.db and addon.db.minimap and addon.db.minimap.degrees) or 220
+    local degrees = (self.db and self.db.minimap and self.db.minimap.degrees) or DEFAULT_ANGLE
     UpdatePosition(degrees)
     button:Show()
 
-    -- Addon compartment (10.x+)
     if AddonCompartmentFrame and AddonCompartmentFrame.RegisterAddon then
         AddonCompartmentFrame:RegisterAddon({
             text = "Outgrow Crests Tracker",
@@ -89,6 +119,8 @@ function addon:InitMinimapButton()
             notCheckable = true,
             registerForAnyClick = true,
             func = function() addon:ToggleDisplay() end,
+            funcOnEnter = function(entry) ShowButtonTooltip(entry, "ANCHOR_LEFT") end,
+            funcOnLeave = function() GameTooltip:Hide() end,
         })
     end
 end

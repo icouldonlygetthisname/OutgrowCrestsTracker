@@ -1,5 +1,14 @@
 # Outgrow Crests Tracker
 
+## [v1.1.0](https://github.com/Efymer/OutgrowCrestsTracker/tree/v1.1.0) (2026-08-22)
+
+- Update for World of Warcraft 12.1.0 — v1.1.0
+- Add Midnight Season 2 "of the Mist" achievements (282 / 295 / 308 / 321 / 331) — v1.1.0
+- Track the season matching your client, switchable from the window header or `/crests season` — v1.1.0
+- Refresh automatically on gear, upgrade, and achievement events instead of only on open — v1.1.0
+- Resolve equipment slots through Enum.ItemRedundancySlot instead of hardcoded indices — v1.1.0
+- Use Frame:SetOnUpdateMode for minimap button dragging — v1.1.0
+
 ## [v1.0.3](https://github.com/Efymer/OutgrowCrestsTracker/tree/v1.0.3) (2026-04-22)
 
 - Update for World of Warcraft 12.0.5 — v1.0.3

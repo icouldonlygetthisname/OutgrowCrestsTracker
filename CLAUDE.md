@@ -1,9 +1,10 @@
 # OutgrowCrestsTracker - Custom Context
 
 > **IMPORTANT: WOW MIDNIGHT TARGET**
-> This addon is built exclusively for **World of Warcraft: Midnight (Patch 12.0.0+)**.
-> You **must** follow the new API restrictions and namespaces introduced in Patch 12.0.0.
+> This addon is built exclusively for **World of Warcraft: Midnight (Patch 12.1.0+, TOC 120100)**.
+> You **must** follow the new API restrictions and namespaces introduced in Patch 12.0.0 and 12.1.0.
 > See the full API changes here: [https://warcraft.wiki.gg/wiki/Patch_12.0.0/API_changes](https://warcraft.wiki.gg/wiki/Patch_12.0.0/API_changes)
+> and here: [https://warcraft.wiki.gg/wiki/Patch_12.1.0/API_changes](https://warcraft.wiki.gg/wiki/Patch_12.1.0/API_changes)
 > Check API methods https://github.com/Ketho/BlizzardInterfaceResources/blob/live/Resources/GlobalAPI.lua using "gh" CLI command
 > Use warcraft.wiki.gg to check for specific methods, for example: https://warcraft.wiki.gg/wiki/API_C_ItemUpgrade.GetHighWatermarkForSlot
 
@@ -30,7 +31,21 @@ Use this format for CHANGELOG.md entries:
 
 Display per-slot gear upgrade progress toward the "X of the Dawn" crest discount achievements in Midnight Season 1. These achievements unlock a **50% crest cost discount for alts** (up from 33% in Dragonflight/TWW) and allow uptrading crests to the next tier.
 
-## Dawn Achievement Series
+## Mist Achievement Series (Season 2, active)
+
+Feats of Strength added in Patch 12.1.0. These supersede the Dawn series — high
+watermarks reset with the season, so only the active season can be evaluated
+from live `C_ItemUpgrade` data.
+
+| Achievement            | ID    | Required iLvl | Crest Discount Unlocked         | Uptrade Unlock                          |
+|------------------------|-------|---------------|---------------------------------|-----------------------------------------|
+| Adventurer of the Mist | 62410 | 282           | Adventurer track 50% off alts   | Adventurer Mistcrests -> Veteran        |
+| Veteran of the Mist    | 62411 | 295           | Veteran track 50% off alts      | Veteran Mistcrests -> Champion          |
+| Champion of the Mist   | 62412 | 308           | Champion track 50% off alts     | Champion Mistcrests -> Hero             |
+| Hero of the Mist       | 62414 | 321           | Hero track 50% off alts         | Hero Mistcrests -> Myth                 |
+| Myth of the Mist       | 62416 | 331           | Myth track 50% off alts         | (Final tier)                            |
+
+## Dawn Achievement Series (Season 1, legacy)
 
 All are Feats of Strength added in Patch 12.0.1. Each achievement fires when **every equipment slot** reaches the required item level high watermark.
 

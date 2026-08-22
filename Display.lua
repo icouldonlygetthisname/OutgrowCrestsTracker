@@ -115,6 +115,13 @@ local function CreateAchievRow(parent, index)
     return row
 end
 
+local function GetOrCreateAchievRow(parent, index)
+    if not achievRows[index] then
+        achievRows[index] = CreateAchievRow(parent, index)
+    end
+    return achievRows[index]
+end
+
 -- ------------------------------------------------------------------ separators
 local separators = {}
 local function GetOrCreateSep(parent, idx)
@@ -127,6 +134,35 @@ local function GetOrCreateSep(parent, idx)
 end
 
 -- ------------------------------------------------------------------ main frame
+local function CreateSeasonSelector(parent)
+    local button = CreateFrame("Button", nil, parent)
+    button:SetSize(200, 16)
+    button:SetPoint("TOP", 0, -32)
+
+    local text = button:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    text:SetAllPoints()
+    text:SetJustifyH("CENTER")
+    button.text = text
+
+    button:SetScript("OnClick", function()
+        addon:CycleSeason()
+    end)
+
+    button:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_BOTTOMRIGHT")
+        GameTooltip:AddLine("Tracked Season", 1.0, 0.82, 0.0)
+        GameTooltip:AddLine(addon:GetSeason().crest .. " upgrade tiers", 0.7, 0.7, 0.7)
+        GameTooltip:AddLine("Click to switch season", 1, 1, 1)
+        GameTooltip:Show()
+    end)
+
+    button:SetScript("OnLeave", function()
+        GameTooltip:Hide()
+    end)
+
+    return button
+end
+
 local function CreateMainFrame()
     local f = CreateFrame("Frame", "OutgrowCrestsTrackerFrame", UIParent, "BackdropTemplate")
     f:SetSize(FRAME_WIDTH, 300)
@@ -150,7 +186,7 @@ local function CreateMainFrame()
 
     -- title
     local title = f:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-    title:SetPoint("TOP", 0, -PAD)
+    title:SetPoint("TOP", 0, -12)
     title:SetText("Outgrow Crests Tracker")
     title:SetTextColor(1.0, 0.82, 0.0)
 
@@ -158,21 +194,20 @@ local function CreateMainFrame()
     local close = CreateFrame("Button", nil, f, "UIPanelCloseButton")
     close:SetPoint("TOPRIGHT", -2, -2)
 
+    f.seasonSelector = CreateSeasonSelector(f)
+
     -- separator below title
     local sep = f:CreateTexture(nil, "ARTWORK")
     sep:SetHeight(1)
-    sep:SetPoint("TOPLEFT",  PAD, -36)
-    sep:SetPoint("TOPRIGHT", -PAD, -36)
+    sep:SetPoint("TOPLEFT",  PAD, -52)
+    sep:SetPoint("TOPRIGHT", -PAD, -52)
     sep:SetColorTexture(0.40, 0.40, 0.40, 0.50)
 
-    f.contentTop = -42
+    f.contentTop = -58
 
-    -- create the 5 fixed achievement rows
-    for i = 1, #addon.Config.achievements do
-        achievRows[i] = CreateAchievRow(f, i)
+    if UISpecialFrames then
+        tinsert(UISpecialFrames, "OutgrowCrestsTrackerFrame")
     end
-
-    tinsert(UISpecialFrames, "OutgrowCrestsTrackerFrame")
 
     f:Hide()
     return f
@@ -184,14 +219,19 @@ function addon:RefreshDisplay()
 
     HideDetailLines()
 
-    local slotData   = self:GetSlotData()
-    local totalSlots = #slotData
-    local y          = frame.contentTop
+    local season       = self:GetSeason()
+    local achievements = season.achievements
+    local slotData     = self:GetSlotData()
+    local totalSlots   = #slotData
+    local y            = frame.contentTop
+
+    frame.seasonSelector.text:SetText(string.format(
+        "|cff%s%s|r |cff%s(%s)|r", WHITE, season.name, GRAY, season.crest))
 
     -- pre-compute achievement status
     local achStatus = {}
     local firstIncomplete = nil
-    for i, achiev in ipairs(addon.Config.achievements) do
+    for i, achiev in ipairs(achievements) do
         local _, _, _, completed = GetAchievementInfo(achiev.id)
         local ready = 0
         for _, slot in ipairs(slotData) do
@@ -206,14 +246,18 @@ function addon:RefreshDisplay()
     end
 
     -- auto-select first incomplete achievement
-    if not selectedIndex then
-        selectedIndex = firstIncomplete or #addon.Config.achievements
+    if not selectedIndex or not achievements[selectedIndex] then
+        selectedIndex = firstIncomplete or #achievements
     end
 
     -- ---- achievement rows -------------------------------------------
-    for i, achiev in ipairs(addon.Config.achievements) do
+    for i = 1, #achievRows do
+        achievRows[i]:Hide()
+    end
+
+    for i, achiev in ipairs(achievements) do
         local st  = achStatus[i]
-        local row = achievRows[i]
+        local row = GetOrCreateAchievRow(frame, i)
         row:ClearAllPoints()
         row:SetPoint("TOPLEFT", frame, "TOPLEFT", PAD, y)
 
@@ -264,7 +308,7 @@ function addon:RefreshDisplay()
     y = y - SECTION_GAP
 
     -- ---- selected achievement detail --------------------------------
-    local selAchiev = addon.Config.achievements[selectedIndex]
+    local selAchiev = achievements[selectedIndex]
     local selSt     = achStatus[selectedIndex]
 
     -- header
@@ -363,12 +407,8 @@ function addon:RefreshDisplay()
         row:Show()
         y = y - DETAIL_HEIGHT
     else
-        -- sort by slot index for natural equipment order
-        local sorted = {}
-        for i, slot in ipairs(slotData) do sorted[i] = slot end
-        table.sort(sorted, function(a, b) return a.slotIndex < b.slotIndex end)
-
-        for _, slot in ipairs(sorted) do
+        -- GetSlotData already returns natural equipment order
+        for _, slot in ipairs(slotData) do
             local row = GetOrCreateDetailLine(frame)
             row:SetPoint("TOPLEFT", frame, "TOPLEFT", PAD + 14, y)
             row:SetHeight(DETAIL_HEIGHT)
@@ -388,6 +428,12 @@ function addon:RefreshDisplay()
 
     -- ---- resize to fit content --------------------------------------
     frame:SetHeight(math.abs(y) + PAD)
+end
+
+-- ------------------------------------------------------------------ season change
+function addon:OnSeasonChanged()
+    selectedIndex = nil
+    self:RefreshDisplay()
 end
 
 -- ------------------------------------------------------------------ toggle
