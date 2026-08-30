@@ -35,14 +35,16 @@ ships by default. Past seasons stay selectable for checking completed runs.
 - **Detailed slot breakdown** -- click any achievement to see which slots are lagging behind, sorted worst-first
 - **Color-coded progress** -- green for slots meeting the threshold, red for slots that need work
 - **Auto-selects next goal** -- automatically highlights the first incomplete achievement on open
-- **Minimap button** -- draggable button with addon compartment support
-- **Lightweight** -- no external dependencies, minimal memory footprint
+- **Minimap button** -- LibDBIcon-based, so it works with SexyMap, square minimaps, and button collectors
+- **LDB launcher** -- shows up in Titan Panel, ChocolateBar, and other LibDataBroker displays
+- **Lightweight** -- embedded libraries only, minimal memory footprint
 
 ## Usage
 
-- Click the **minimap button** to toggle the tracker window
+- **Left-click** the minimap button to toggle the tracker window, **right-click** to switch season
 - Or type `/outgrow` or `/crests` in chat
 - `/crests season` cycles the tracked season, `/crests season 2` picks one directly
+- `/crests minimap` hides or shows the minimap button
 
 Click any achievement row to see the detailed per-slot breakdown for that tier, or
 the season label under the title to switch seasons.
@@ -56,3 +58,16 @@ the season label under the title to switch seasons.
 ## Requirements
 
 - World of Warcraft: Midnight (Patch 12.1.0+)
+
+## Building
+
+`Libs/` is not tracked in git. The [BigWigs packager](https://github.com/BigWigsMods/packager)
+fetches the embedded libraries from the `externals` block in `.pkgmeta` when a tag
+is pushed. To run from a plain checkout, fetch them once:
+
+```sh
+svn export https://repos.wowace.com/wow/ace3/trunk/LibStub Libs/LibStub
+svn export https://repos.wowace.com/wow/ace3/trunk/CallbackHandler-1.0 Libs/CallbackHandler-1.0
+svn export https://repos.wowace.com/wow/libdbicon-1-0/trunk/LibDBIcon-1.0 Libs/LibDBIcon-1.0
+git clone https://github.com/tekkub/libdatabroker-1-1 Libs/LibDataBroker-1.1
+```

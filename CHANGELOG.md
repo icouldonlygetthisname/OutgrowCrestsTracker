@@ -1,13 +1,16 @@
 # Outgrow Crests Tracker
 
-## [v1.1.0](https://github.com/Efymer/OutgrowCrestsTracker/tree/v1.1.0) (2026-08-22)
+## [v1.1.0](https://github.com/Efymer/OutgrowCrestsTracker/tree/v1.1.0) (2026-08-30)
 
 - Update for World of Warcraft 12.1.0 — v1.1.0
 - Add Midnight Season 2 "of the Mist" achievements (282 / 295 / 308 / 321 / 331) — v1.1.0
 - Track the season matching your client, switchable from the window header or `/crests season` — v1.1.0
 - Refresh automatically on gear, upgrade, and achievement events instead of only on open — v1.1.0
 - Resolve equipment slots through Enum.ItemRedundancySlot instead of hardcoded indices — v1.1.0
-- Use Frame:SetOnUpdateMode for minimap button dragging — v1.1.0
+- Replace the custom minimap button with LibDBIcon-1.0, so it respects SexyMap, square minimaps, and other button collectors — v1.1.0
+- Expose a LibDataBroker launcher for Titan Panel, ChocolateBar, and similar displays — v1.1.0
+- Right-click the minimap button to switch season; `/crests minimap` hides or shows it — v1.1.0
+- Existing minimap button positions carry over automatically — v1.1.0
 
 ## [v1.0.3](https://github.com/Efymer/OutgrowCrestsTracker/tree/v1.0.3) (2026-04-22)
 

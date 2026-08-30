@@ -133,7 +133,23 @@ local function InitDB()
     OutgrowCrestsTrackerDB = OutgrowCrestsTrackerDB or {}
     local db = OutgrowCrestsTrackerDB
 
-    db.minimap = db.minimap or { degrees = 220 }
+    -- LibDBIcon owns this table: { minimapPos, hide, lock, showInCompartment }.
+    db.minimap = db.minimap or {}
+
+    -- Migrate the pre-LibDBIcon custom button position. Both store degrees, so
+    -- the angle carries over as-is.
+    if db.minimap.degrees then
+        db.minimap.minimapPos = db.minimap.minimapPos or db.minimap.degrees
+        db.minimap.degrees = nil
+    end
+
+    if db.minimap.minimapPos == nil then
+        db.minimap.minimapPos = 220
+    end
+    if db.minimap.showInCompartment == nil then
+        db.minimap.showInCompartment = true
+    end
+
     if not addon.Config:IsValidSeasonIndex(db.seasonIndex) then
         db.seasonIndex = addon.Config:GetSeasonIndexForClient()
     end
@@ -169,6 +185,7 @@ local function PrintUsage()
         Print(string.format("|cffffffff/crests season %d|r %s (%s)",
             i, season.fullName, season.crest))
     end
+    Print("|cffffffff/crests minimap|r show or hide the minimap button")
 end
 
 SLASH_OUTGROWCRESTSTRACKER1 = "/outgrow"
@@ -189,6 +206,10 @@ SlashCmdList["OUTGROWCRESTSTRACKER"] = function(input)
             addon:CycleSeason()
         end
         Print("Now tracking " .. addon:GetSeason().fullName .. ".")
+    elseif command == "minimap" then
+        local hide = not addon:IsMinimapButtonHidden()
+        addon:SetMinimapButtonHidden(hide)
+        Print("Minimap button " .. (hide and "hidden." or "shown."))
     else
         PrintUsage()
     end
