@@ -1,4 +1,4 @@
-## Interface: 120100
+## Interface: 120100, 120105
 ## Title: Outgrow Crests Tracker
 ## Notes: Track gear progress toward the seasonal crest discount achievements that unlock 50% crest discounts for alts.
 ## Author: Efymer
